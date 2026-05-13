@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Aumento Salarial Docente</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card-soft: #1f2937;
+      --text: #f9fafb;
+      --muted: #cbd5e1;
+      --accent: #38bdf8;
+      --accent2: #facc15;
+      --good: #22c55e;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,0.28), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(250,204,21,0.18), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    .container { width: min(1100px, 100%); margin: 0 auto; }
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 28px 18px;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: rgba(15,23,42,0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-banner {
+      width: 100%;
+      display: block;
+      border-radius: 28px;
+      margin: 0 0 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    @media (max-width: 860px) {
+      .hero-banner { border-radius: 18px; margin-bottom: 14px; }
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 6vw, 60px);
+      line-height: 1.02;
+      letter-spacing: -1.5px;
+    }
+    .subtitle {
+      max-width: 780px;
+      margin: 16px auto 0;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.5;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      body { padding: 14px; }
+      .grid { grid-template-columns: 1fr; }
+      header { padding: 22px 14px; border-radius: 22px; }
+    }
+    .card {
+      background: rgba(17,24,39,0.88);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 { margin: 0 0 14px; font-size: 22px; }
+    .hint {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-top: -4px;
+      margin-bottom: 18px;
+    }
+    label { display: block; font-weight: 700; margin: 16px 0 8px; }
+    select, input {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text);
+      border-radius: 16px;
+      padding: 14px 14px;
+      font-size: 16px;
+      outline: none;
+    }
+    select:focus, input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(56,189,248,0.15);
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 12px;
+      background: var(--card-soft);
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      transition: transform .15s ease, border .15s ease, background .15s ease;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .chip:hover { transform: translateY(-1px); border-color: var(--accent); }
+    .chip.active { background: rgba(56,189,248,0.22); border-color: var(--accent); color: #e0f2fe; }
+    button {
+      width: 100%;
+      margin-top: 22px;
+      border: none;
+      border-radius: 18px;
+      padding: 16px 18px;
+      background: linear-gradient(135deg, #38bdf8, #2563eb);
+      color: white;
+      font-weight: 900;
+      font-size: 17px;
+      cursor: pointer;
+      box-shadow: 0 15px 30px rgba(37,99,235,0.35);
+      transition: transform .15s ease, filter .15s ease;
+    }
+    button:hover { transform: translateY(-2px); filter: brightness(1.08); }
+    .results { display: grid; gap: 14px; }
+    .result-card {
+      background: linear-gradient(180deg, rgba(31,41,55,0.9), rgba(15,23,42,0.95));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+    }
+    .result-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .scenario { font-weight: 900; font-size: 18px; }
+    .percent {
+      background: rgba(255,255,255,0.08);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      color: var(--accent2);
+      white-space: nowrap;
+    }
+    .money {
+      font-size: 34px;
+      font-weight: 950;
+      letter-spacing: -1px;
+      color: var(--good);
+      margin: 4px 0;
+    }
+    .small-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    @media (max-width: 600px) {
+      .small-grid { grid-template-columns: 1fr; }
+    }
+    .mini {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .mini span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 5px; }
+    .mini strong { font-size: 16px; }
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+    @media (max-width: 700px) {
+      .history-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .history-item {
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.18);
+      border-radius: 14px;
+      padding: 11px;
+      text-align: center;
+    }
+    .history-item span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+    .history-item strong { font-size: 18px; color: var(--accent2); }
+    .bar-wrap { margin-top: 12px; display: grid; gap: 8px; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 46px 1fr 54px;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .bar-bg {
+      height: 12px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #facc15);
+      border-radius: 999px;
+    }
+    .notice {
+      margin-top: 16px;
+      border-left: 4px solid var(--accent2);
+      background: rgba(250,204,21,0.09);
+      padding: 13px 14px;
+      border-radius: 14px;
+      color: #fde68a;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .sarcasm { margin-top: 14px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+    .footer { text-align: center; color: var(--muted); font-size: 13px; margin: 22px 0 6px; }
+    .hidden { display: none; }
+    .empty-state {
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed var(--border);
+      border-radius: 22px;
+      padding: 24px;
+      background: rgba(255,255,255,0.03);
+    }
+    .empty-state .emoji { font-size: 56px; margin-bottom: 10px; }
+    .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .pill {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img class="hero-banner" src="banner.png" alt="Banner Juguemos con la probabilidad - El Profe Manuel" />
+    <header>
+      <h1>Juguemos con la probabilidad<br>¿Cuánto podría ser el aumento?</h1>
+      <p class="subtitle">
+        Juguemos con la probabilidad. Escribe cuánto te depositan normalmente, elige tu perfil y mira tres escenarios posibles de aumento neto quincenal, comparados con datos históricos.
+      </p>
+    </header>
+
+    <main class="grid">
+      <section class="card">
+        <h2>Datos para el simulador</h2>
+        <p class="hint">Usa una quincena normal. No metas aguinaldo, retroactivo, bono raro, pago atrasado ni esa quincena milagrosa que luego desaparece.</p>
+
+        <div class="notice">
+          Nota aclaratoria: esta calculadora está programada con base en los últimos datos históricos de incremento salarial docente. No contempla al cien por ciento todas las prestaciones, deducciones, descuentos personales o variaciones de cada plaza, por lo que su propósito es orientativo y recreativo. La idea es jugar con la probabilidad y obtener un estimado aproximado de cuánto podría reflejarse el aumento en tu pago neto quincenal, de acuerdo con el perfil que selecciones.
+        </div>
+
+        <div class="notice">
+          Nota de lectura: una cosa es el aumento global anunciado, otra el aumento directo al 07 y otra muy distinta lo que realmente cae neto en la quincena. Por eso este simulador no promete exactitud de nómina; solo estima escenarios.
+        </div>
+
+        <label for="nivel">Nivel o función</label>
+        <select id="nivel">
+          <option value="preescolar">Preescolar</option>
+          <option value="primaria" selected>Primaria</option>
+          <option value="secundaria">Secundaria</option>
+        </select>
+
+        <label for="perfil">Tipo de plaza o función</label>
+        <select id="perfil"></select>
+
+        <div id="horasBox" class="hidden">
+          <label for="horas">Horas H/S/M</label>
+          <input id="horas" type="number" min="1" max="42" placeholder="Ejemplo: 31" />
+          <div class="chips" id="chipsHoras">
+            <div class="chip" data-horas="19">19 h</div>
+            <div class="chip" data-horas="30">30 h</div>
+            <div class="chip" data-horas="31">31 h</div>
+            <div class="chip" data-horas="40">40 h</div>
+          </div>
+        </div>
+
+        <label for="neto">¿Cuánto te depositan neto por quincena?</label>
+        <input id="neto" type="number" min="1" placeholder="Ejemplo: 12000" />
+
+        <button onclick="calcular()">Calcular mi posible nueva quincena</button>
+
+        <div class="notice">
+          Este simulador no es oficial. Es una estimación orientativa basada en tu depósito neto actual y un factor de ajuste por perfil, considerando que ISR, ISSSTE y otras variaciones pueden comerse una parte del aumento.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Resultado</h2>
+        <div id="resultado" class="empty-state">
+          <div>
+            <div class="emoji">🧮</div>
+            <strong>Aquí aparecerá el posible aumento.</strong>
+            <p>Primero captura tus datos. La calculadora no adivina, aunque a veces la nómina parezca que sí.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="footer">
+      Simulador orientativo para docentes. No sustituye el talón de pago ni representa una cifra oficial de SEP, SNTE o autoridad educativa.
+    </div>
+  </div>
+
+  <script>
+    const perfilesPorNivel = {
+      preescolar: [
+        { value: "pre_docente", text: "Docente frente a grupo", factor: 0.82 },
+        { value: "pre_director", text: "Director(a)", factor: 0.72 },
+        { value: "pre_supervisor", text: "Supervisor(a)", factor: 0.68 }
+      ],
+      primaria: [
+        { value: "pri_docente", text: "Docente frente a grupo, una plaza", factor: 0.82 },
+        { value: "pri_doble", text: "Docente con doble plaza", factor: 0.76 },
+        { value: "pri_subadmin", text: "Subdirector administrativo", factor: 0.74 },
+        { value: "pri_director", text: "Director(a)", factor: 0.72 },
+        { value: "pri_supervisor", text: "Supervisor(a)", factor: 0.68 }
+      ],
+      secundaria: [
+        { value: "sec_hsm", text: "Docente frente a grupo por H/S/M", factor: 0.78, horas: true },
+        { value: "sec_jornada", text: "Docente por jornada", factor: 0.78 },
+        { value: "sec_subdirector", text: "Subdirector(a)", factor: 0.72 },
+        { value: "sec_director", text: "Director(a)", factor: 0.70 },
+        { value: "sec_jefe", text: "Jefe de enseñanza", factor: 0.70 },
+        { value: "sec_supervisor", text: "Supervisor(a)", factor: 0.68 }
+      ]
+    };
+
+    const mensajes = {
+      conservador: "Escenario conservador: si el aumento viene más pegado al 07 directo.",
+      probable: "Escenario probable: tomando como referencia el comportamiento más reciente.",
+      optimista: "Escenario optimista: si el aumento global se acerca a los mejores años recientes."
+    };
+
+    const historico = [
+      { anio: 2021, global: 3.9, directo07: 3.4, inflacion: 7.36, minimo: 15 },
+      { anio: 2022, global: 7.5, directo07: 3.5, inflacion: 7.82, minimo: 22 },
+      { anio: 2023, global: 8.2, directo07: 4.0, inflacion: 4.66, minimo: 20 },
+      { anio: 2024, global: 16.0, directo07: 10.0, inflacion: 4.21, minimo: 20 },
+      { anio: 2025, global: 9.0, directo07: 7.0, inflacion: 3.93, minimo: 12 },
+      { anio: 2026, global: null, directo07: null, inflacion: 4.45, minimo: 13 }
+    ];
+
+    const nivel = document.getElementById("nivel");
+    const perfil = document.getElementById("perfil");
+    const horasBox = document.getElementById("horasBox");
+    const horasInput = document.getElementById("horas");
+    const resultado = document.getElementById("resultado");
+
+    function money(value) {
+      return new Intl.NumberFormat("es-MX", {
+        style: "currency",
+        currency: "MXN",
+        maximumFractionDigits: 0
+      }).format(value);
+    }
+
+    function cargarPerfiles() {
+      perfil.innerHTML = "";
+      perfilesPorNivel[nivel.value].forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.value;
+        option.textContent = p.text;
+        option.dataset.factor = p.factor;
+        option.dataset.horas = p.horas ? "true" : "false";
+        perfil.appendChild(option);
+      });
+      revisarHoras();
+    }
+
+    function revisarHoras() {
+      const selected = perfil.options[perfil.selectedIndex];
+      horasBox.classList.toggle("hidden", selected.dataset.horas !== "true");
+    }
+
+    function calcularEscenario(neto, porcentaje, factor, nombre, tipo) {
+      const aumento = neto * (porcentaje / 100) * factor;
+      const nuevo = neto + aumento;
+      return `
+        <div class="result-card">
+          <div class="result-top">
+            <div class="scenario">${nombre}</div>
+            <div class="percent">${porcentaje}% oficial</div>
+          </div>
+          <div class="money">+${money(aumento)}</div>
+          <div class="sarcasm">${mensajes[tipo]}</div>
+          <div class="small-grid">
+            <div class="mini"><span>Nuevo depósito aprox.</span><strong>${money(nuevo)}</strong></div>
+            <div class="mini"><span>Aumento mensual</span><strong>${money(aumento * 2)}</strong></div>
+            <div class="mini"><span>Aumento anual</span><strong>${money(aumento * 24)}</strong></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function bloqueHistorico(neto, factor) {
+      const datosCerrados = historico.filter(item => item.global !== null);
+      const promedioGlobal = datosCerrados.reduce((acc, item) => acc + item.global, 0) / datosCerrados.length;
+      const promedio07 = datosCerrados.reduce((acc, item) => acc + item.directo07, 0) / datosCerrados.length;
+      const maximo = datosCerrados.reduce((max, item) => item.global > max.global ? item : max, datosCerrados[0]);
+      const aumentoPromedioNeto = neto * (promedioGlobal / 100) * factor;
+      const maxBar = 22;
+
+      return `
+        <div class="result-card">
+          <div class="result-top">
+            <div class="scenario">Comparativo histórico para jugar con datos</div>
+            <div class="percent">2021–2026</div>
+          </div>
+          <p class="sarcasm">
+            Tomando los años cerrados de 2021 a 2025, el promedio del aumento global docente queda cerca de <strong>${promedioGlobal.toFixed(2)}%</strong>. 
+            El promedio del aumento directo al 07 queda cerca de <strong>${promedio07.toFixed(2)}%</strong>. 
+            Por eso el simulador usa tres escenarios más prudentes: <strong>7%, 9% y 10%</strong>.
+          </p>
+
+          <div class="bar-wrap">
+            <div class="bar-row" style="grid-template-columns: 46px 1fr 68px;">
+              <span>Año</span>
+              <span>Aumento global a maestros</span>
+              <strong>Dato</strong>
+            </div>
+            ${historico.map(item => `
+              <div class="bar-row" style="grid-template-columns: 46px 1fr 68px;">
+                <span>${item.anio}</span>
+                <div class="bar-bg"><div class="bar" style="width:${item.global === null ? 0 : Math.min((item.global / maxBar) * 100, 100)}%"></div></div>
+                <strong>${item.global === null ? "Pend." : item.global + "%"}</strong>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="history-grid">
+            ${historico.map(item => `
+              <div class="history-item">
+                <span>${item.anio}</span>
+                <strong>${item.global === null ? "Pend." : item.global + "%"}</strong>
+                <small style="display:block;color:#cbd5e1;margin-top:4px;">07: ${item.directo07 === null ? "Pend." : item.directo07 + "%"}</small>
+                <small style="display:block;color:#cbd5e1;">Infl.: ${item.inflacion}%</small>
+                <small style="display:block;color:#cbd5e1;">Mín.: ${item.minimo}%</small>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="small-grid">
+            <div class="mini"><span>Promedio global 2021–2025</span><strong>${promedioGlobal.toFixed(2)}%</strong></div>
+            <div class="mini"><span>Promedio directo 07</span><strong>${promedio07.toFixed(2)}%</strong></div>
+            <div class="mini"><span>Si se repite el promedio global</span><strong>+${money(aumentoPromedioNeto)}</strong></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function calcular() {
+      const neto = Number(document.getElementById("neto").value);
+      const selected = perfil.options[perfil.selectedIndex];
+      const factor = Number(selected.dataset.factor);
+      const requiereHoras = selected.dataset.horas === "true";
+      const horas = Number(horasInput.value);
+
+      if (!neto || neto <= 0) {
+        resultado.className = "empty-state";
+        resultado.innerHTML = `
+          <div>
+            <div class="emoji">😅</div>
+            <strong>Falta el dato más importante.</strong>
+            <p>Escribe cuánto te depositan neto por quincena. Sin ese dato, ni la nómina ni la calculadora cooperan.</p>
+          </div>`;
+        return;
+      }
+
+      if (requiereHoras && (!horas || horas <= 0)) {
+        resultado.className = "empty-state";
+        resultado.innerHTML = `
+          <div>
+            <div class="emoji">⏰</div>
+            <strong>Faltan tus horas.</strong>
+            <p>Para secundaria por H/S/M necesitamos saber cuántas horas tienes. La calculadora no lee la mente, todavía.</p>
+          </div>`;
+        return;
+      }
+
+      const escenarios = [
+        { nombre: "Conservador", porcentaje: 7, tipo: "conservador" },
+        { nombre: "Probable", porcentaje: 9, tipo: "probable" },
+        { nombre: "Optimista", porcentaje: 10, tipo: "optimista" }
+      ];
+
+      const perfilTexto = selected.textContent;
+      const horasTexto = requiereHoras ? `<span class="pill">Horas: ${horas} H/S/M</span>` : "";
+      const impactoProbable = (9 * factor).toFixed(2);
+
+      resultado.className = "results";
+      resultado.innerHTML = `
+        <div class="result-card">
+          <div class="result-top">
+            <div class="scenario">Resumen de tu jugada</div>
+            <div class="percent">Factor ${factor.toFixed(2)}</div>
+          </div>
+          <div class="small-grid">
+            <div class="mini"><span>Depósito actual</span><strong>${money(neto)}</strong></div>
+            <div class="mini"><span>Perfil</span><strong>${perfilTexto}</strong></div>
+            <div class="mini"><span>9% oficial se sentiría como</span><strong>${impactoProbable}% neto</strong></div>
+          </div>
+          <div class="pill-row">
+            <span class="pill">${nivel.options[nivel.selectedIndex].text}</span>
+            ${horasTexto}
+            <span class="pill">Cálculo orientativo</span>
+          </div>
+        </div>
+        ${escenarios.map(e => calcularEscenario(neto, e.porcentaje, factor, e.nombre, e.tipo)).join("")}
+        ${bloqueHistorico(neto, factor)}
+        
+      `;
+    }
+
+    nivel.addEventListener("change", cargarPerfiles);
+    perfil.addEventListener("change", revisarHoras);
+
+    document.querySelectorAll(".chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        horasInput.value = chip.dataset.horas;
+      });
+    });
+
+    cargarPerfiles();
+  </script>
+</body>
+</html>
